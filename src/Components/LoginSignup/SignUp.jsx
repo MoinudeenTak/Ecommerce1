@@ -102,7 +102,7 @@ const SignUp = () => {
             type="submit"
             className="w-full bg-linear-to-r from-blue-500 to-purple-600 text-white font-bold py-3 rounded-xl hover:shadow-xl hover:scale-105 transition duration-200 mt-10 active:scale-95"
           >
-            Create Account
+            Create Your Account
           </button>
 
           <p className="text-center text-gray-600 text-sm font-medium">
