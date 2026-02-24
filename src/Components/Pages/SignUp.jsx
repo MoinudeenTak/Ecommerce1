@@ -10,15 +10,7 @@ const SignUp = () => {
     formState: { errors },
   } = useForm();
   const navigate = useNavigate();
-  // const onSubmit = async (formData) => {
-  //   try {
-  //     console.log("formData ", formData);
-  //     localStorage.setItem('user', JSON.Stringify({email, password}));
-  //     navigate("/LoginForm");
-  //   } catch (errors) {
-  //     console.log(errors);
-  //   }
-  // };
+  
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
