@@ -1,17 +1,62 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { useForm } from "react-hook-form";
+import { AiFillHome } from "react-icons/ai";
+import { useState } from "react";
 const SignUp = () => {
-  const handleSubmit = (event) => {
-    event.preventDefault();
+  const {
+    register,
+    handleSubmit,
+    watch,
+    formState: { errors },
+  } = useForm();
+  const navigate = useNavigate();
+
+  // const onSubmit = (formData) => {
+  //   console.log("Form Data", formData);
+  //   navigate('/LoginForm')
+  // };
+
+  // const onSubmit = async (formData) => {
+  //   try {
+  //     console.log("formData ", formData);
+  //     localStorage.setItem('user', JSON.Stringify({email, password}));
+  //     navigate("/LoginForm");
+  //   } catch (errors) {
+  //     console.log(errors);
+  //   }
+  // };
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+
+  const onSubmit = (formData) => {
+    // e.preventDefault();becoz of reacthook form is managing data
+    const newUser = {
+      email: formData.email,
+      password: formData.password,
+    };
+    const usersList = JSON.parse(localStorage.getItem("users")) || [];
+    usersList.push(newUser);
+    localStorage.setItem("users", JSON.stringify({ email, password }));
+    navigate("/LoginForm");
+    alert("User saved!");
   };
   return (
     <div className="flex items-center justify-center min-h-screen bg-linear-to-br from-blue-500 via-blue-600 to-purple-700 p-4">
+      {/* Home Button */}
+      <Link
+        to="/"
+        className="absolute top-6 left-6 text-white hover:bg-white hover:text-blue-600 p-3 rounded-full transition duration-200"
+        title="Go Home"
+      >
+        <AiFillHome size={24} />
+      </Link>
       <div className="bg-white rounded-3xl shadow-2xl p-10 w-full max-w-md">
         <div className="text-center mb-10">
           <h2 className="text-5xl font-bold text-gray-800 mb-2">Sign Up</h2>
           <p className="text-gray-500 text-sm font-medium">Join us today</p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label
@@ -21,13 +66,18 @@ const SignUp = () => {
                 First Name
               </label>
               <input
-                id="firstname"
                 type="text"
-                name="firstname"
                 placeholder="John"
-                required
+                {...register("firstname", {
+                  required: "Enter your firstname",
+                  pattern: {
+                    value: /^[A-Za-z]{2,}$/,
+                    message: "please fill the first name",
+                  },
+                })}
                 className="w-full px-4 py-3 text-sm border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition duration-200 bg-gray-50 hover:bg-white"
               />
+              {errors.firstname && <p>{errors.firstname.message}</p>}
             </div>
             <div>
               <label
@@ -37,13 +87,18 @@ const SignUp = () => {
                 Last Name
               </label>
               <input
-                id="lastname"
                 type="text"
-                name="lastname"
                 placeholder="Doe"
-                required
+                {...register("lastname", {
+                  required: "Enter your lastname",
+                  pattern: {
+                    value: /^[A-Za-z]{2,}$/,
+                    message: "please fill the last name",
+                  },
+                })}
                 className="w-full px-4 py-3 text-sm border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition duration-200 bg-gray-50 hover:bg-white"
               />
+              {errors.lastname && <p>{errors.lastname.message}</p>}
             </div>
           </div>
 
@@ -55,13 +110,19 @@ const SignUp = () => {
               Email Address
             </label>
             <input
-              id="username"
               type="email"
-              name="username"
               placeholder="you@example.com"
-              required
+              {...register("email", {
+                required: "Email Address is required",
+                pattern: {
+                  value: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[A-Za-z]{2,}$/,
+                  message: "Invalid email format",
+                },
+              })}
+              onChange={(e) => setEmail(e.target.value)}
               className="w-full px-4 py-3 text-sm border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition duration-200 bg-gray-50 hover:bg-white"
             />
+            {errors.email && <p>{errors.email.message}</p>}
           </div>
 
           <div>
@@ -72,13 +133,21 @@ const SignUp = () => {
               Password
             </label>
             <input
-              id="password"
               type="password"
-              name="password"
               placeholder="••••••••"
-              required
+              {...register("password", {
+                required: "Password is required",
+                pattern: {
+                  value:
+                    /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/,
+                  message:
+                    "Password must contain 8 characters, uppercase, lowercase, number and special character",
+                },
+              })}
+              onChange={(e) => setPassword(e.target.value)}
               className="w-full px-4 py-3 text-sm border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition duration-200 bg-gray-50 hover:bg-white"
             />
+            {errors.password && <p>{errors.password.message}</p>}
           </div>
 
           <div>
@@ -89,13 +158,19 @@ const SignUp = () => {
               Confirm Password
             </label>
             <input
-              id="confirmpassword"
               type="password"
-              name="confirmpassword"
               placeholder="••••••••"
-              required
+              {...register(" ConfirmPassword", {
+                required: "Confirm Password is required",
+                pattern: {
+                  value:
+                    /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/,
+                  message: "Password must be same ",
+                },
+              })}
               className="w-full px-4 py-3 text-sm border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition duration-200 bg-gray-50 hover:bg-white"
             />
+            {errors.password && <p>{errors.password.message}</p>}
           </div>
 
           <button
@@ -108,7 +183,7 @@ const SignUp = () => {
           <p className="text-center text-gray-600 text-sm font-medium">
             Already have an account?
             <Link
-              to="/"
+              to="/LoginForm"
               className="text-blue-600 font-bold hover:text-blue-700 transition"
             >
               Log in here
