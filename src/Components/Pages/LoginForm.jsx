@@ -1,9 +1,10 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { AiFillHome } from "react-icons/ai";
 import { MdEmail, MdLock } from "react-icons/md";
 
 const LoginForm = () => {
+  const navigate = useNavigate();
   const {
     register,
     handleSubmit,
@@ -12,6 +13,22 @@ const LoginForm = () => {
 
   const onSubmit = (formData) => {
     console.log("Form Data", formData);
+    const users = JSON.parse(localStorage.getItem("users")) || [];
+    const validUser = users.find(
+      (user) =>
+        user.email === formData.email && user.password === formData.password
+    );
+
+    if (!validUser) {
+      alert("Invalid credentials!");
+      return;
+    }
+
+    // Store login session
+    localStorage.setItem("loggedInUser", JSON.stringify(validUser));
+
+    alert("Login successful!");
+    navigate("/dashboard");
   };
 
   return (
@@ -28,7 +45,9 @@ const LoginForm = () => {
       {/* Login Card */}
       <div className="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md transform transition duration-300 hover:shadow-3xl">
         <div className="text-center mb-8">
-          <h2 className="text-4xl font-bold text-gray-800 mb-2">Welcome Back</h2>
+          <h2 className="text-4xl font-bold text-gray-800 mb-2">
+            Welcome Back
+          </h2>
           <p className="text-gray-600 text-sm">Sign in to your account</p>
         </div>
 
@@ -60,7 +79,9 @@ const LoginForm = () => {
               />
             </div>
             {errors.email && (
-              <p className="text-red-500 text-xs mt-1">{errors.email.message}</p>
+              <p className="text-red-500 text-xs mt-1">
+                {errors.email.message}
+              </p>
             )}
           </div>
 
@@ -93,11 +114,14 @@ const LoginForm = () => {
               />
             </div>
             {errors.password && (
-              <p className="text-red-500 text-xs mt-1">{errors.password.message}</p>
+              <p className="text-red-500 text-xs mt-1">
+                {errors.password.message}
+              </p>
             )}
           </div>
 
           {/* Login Button */}
+
           <button
             type="submit"
             className="w-full bg-linear-to-r from-blue-500 to-purple-600 text-white font-semibold py-3 rounded-lg hover:shadow-lg hover:scale-105 transition duration-200 active:scale-95"

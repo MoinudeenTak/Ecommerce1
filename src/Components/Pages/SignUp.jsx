@@ -1,7 +1,7 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { AiFillHome } from "react-icons/ai";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 const SignUp = () => {
   const {
     register,
@@ -10,22 +10,59 @@ const SignUp = () => {
     formState: { errors },
   } = useForm();
   const navigate = useNavigate();
-  
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
 
-  const onSubmit = (formData) => {
-    // e.preventDefault();becoz of reacthook form is managing data
-    const newUser = {
-      email: formData.email,
-      password: formData.password,
-    };
-    const usersList = JSON.parse(localStorage.getItem("users")) || [];
-    usersList.push(newUser);
-    localStorage.setItem("users", JSON.stringify({ email, password }));
-    navigate("/LoginForm");
-    alert("User saved!");
+  // const onSubmit = (formData) => {
+  //   const usersList = JSON.parse(localStorage.getItem("users")) || [];
+  //   console.log(usersList);
+
+  //   const userExists = usersList.find((user) => user.email === formData.email);
+
+  //   if (userExists) {
+  //     alert("User already exists!");
+  //     return;
+  //   }
+  //   const newUser = {
+  //     email: formData.email,
+  //     password: formData.password,
+  //   };
+  //   const updatedUsers = [...usersList, newUser];
+
+  //   // usersList.push(newUser);wrong method never mutate 
+  //   // usersList.push(updatedUsers); wrong method
+  //   localStorage.setItem("users", JSON.stringify(updatedUsers));
+
+  //   alert("User saved successfully!");
+  //   navigate("/LoginForm");
+  // };
+
+  const [users, setUsers] = useState(() => {
+  return JSON.parse(localStorage.getItem("users")) || [];
+});
+ console.log(users);
+useEffect(() => {
+  localStorage.setItem("users", JSON.stringify(users));
+}, [users]);
+ 
+const onSubmit = (formData) => {
+  const userExists = users.find(
+    (user) => user.email === formData.email
+  );
+
+  if (userExists) {
+    alert("User already exists!");
+    return;
+  }
+
+  const newUser = {
+    email: formData.email,
+    password: formData.password,
   };
+
+  setUsers((prevUsers) => [...prevUsers, newUser]);
+
+  alert("User saved successfully!");
+   navigate("/LoginForm");
+};
   return (
     <div className="flex items-center justify-center min-h-screen bg-linear-to-br from-blue-500 via-blue-600 to-purple-700 p-4">
       {/* Home Button */}
@@ -105,7 +142,6 @@ const SignUp = () => {
                   message: "Invalid email format",
                 },
               })}
-              onChange={(e) => setEmail(e.target.value)}
               className="w-full px-4 py-3 text-sm border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition duration-200 bg-gray-50 hover:bg-white"
             />
             {errors.email && <p>{errors.email.message}</p>}
@@ -130,7 +166,6 @@ const SignUp = () => {
                     "Password must contain 8 characters, uppercase, lowercase, number and special character",
                 },
               })}
-              onChange={(e) => setPassword(e.target.value)}
               className="w-full px-4 py-3 text-sm border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition duration-200 bg-gray-50 hover:bg-white"
             />
             {errors.password && <p>{errors.password.message}</p>}
