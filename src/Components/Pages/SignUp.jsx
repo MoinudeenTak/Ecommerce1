@@ -38,7 +38,7 @@ const SignUp = () => {
   const [users, setUsers] = useState(() => {
   return JSON.parse(localStorage.getItem("users")) || [];
 });
- console.log(users);
+ 
 useEffect(() => {
   localStorage.setItem("users", JSON.stringify(users));
 }, [users]);

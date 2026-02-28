@@ -12,7 +12,7 @@ const LoginForm = () => {
   } = useForm();
 
   const onSubmit = (formData) => {
-    console.log("Form Data", formData);
+    // console.log("Form Data", formData);
     const users = JSON.parse(localStorage.getItem("users")) || [];
     const validUser = users.find(
       (user) =>
@@ -28,7 +28,7 @@ const LoginForm = () => {
     localStorage.setItem("loggedInUser", JSON.stringify(validUser));
 
     alert("Login successful!");
-    navigate("/dashboard");
+    navigate("/");
   };
 
   return (

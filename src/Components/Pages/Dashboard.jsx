@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link } from "react-router-dom";
 import { AiFillHome } from "react-icons/ai";
+import { FaRupeeSign } from "react-icons/fa";
 
 const Dashboard = () => {
     const [stats] = useState({
@@ -104,22 +105,18 @@ const Dashboard = () => {
                     <div className="bg-white rounded-lg shadow p-6 hover:shadow-lg transition border-l-4 border-blue-500">
                         <h3 className="text-gray-600 text-sm font-medium mb-2">Total Products</h3>
                         <p className="text-3xl font-bold text-gray-900">{stats.totalProducts}</p>
-                        <p className="text-xs text-gray-500 mt-2">+2.5% from last month</p>
                     </div>
                     <div className="bg-white rounded-lg shadow p-6 hover:shadow-lg transition border-l-4 border-green-500">
                         <h3 className="text-gray-600 text-sm font-medium mb-2">Total Orders</h3>
                         <p className="text-3xl font-bold text-gray-900">{stats.totalOrders}</p>
-                        <p className="text-xs text-gray-500 mt-2">+12% from last month</p>
                     </div>
                     <div className="bg-white rounded-lg shadow p-6 hover:shadow-lg transition border-l-4 border-purple-500">
                         <h3 className="text-gray-600 text-sm font-medium mb-2">Total Revenue</h3>
-                        <p className="text-3xl font-bold text-gray-900">${stats.totalRevenue}</p>
-                        <p className="text-xs text-gray-500 mt-2">+8.2% from last month</p>
+                        <p className="text-3xl font-bold text-gray-900"><FaRupeeSign />{stats.totalRevenue}</p>
                     </div>
                     <div className="bg-white rounded-lg shadow p-6 hover:shadow-lg transition border-l-4 border-orange-500">
                         <h3 className="text-gray-600 text-sm font-medium mb-2">Total Users</h3>
                         <p className="text-3xl font-bold text-gray-900">{stats.totalUsers}</p>
-                        <p className="text-xs text-gray-500 mt-2">+5.3% from last month</p>
                     </div>
                 </div>
 
