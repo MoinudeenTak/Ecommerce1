@@ -2,7 +2,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { AiFillHome } from "react-icons/ai";
 import { MdEmail, MdLock } from "react-icons/md";
-
+import CryptoJS from "crypto-js";
 const LoginForm = () => {
   const navigate = useNavigate();
   const {
@@ -14,21 +14,26 @@ const LoginForm = () => {
   const onSubmit = (formData) => {
     // console.log("Form Data", formData);
     const users = JSON.parse(localStorage.getItem("users")) || [];
-    const validUser = users.find(
-      (user) =>
-        user.email === formData.email && user.password === formData.password
-    );
+    
+const user = users.find(user => user.email === formData.email);
 
-    if (!validUser) {
-      alert("Invalid credentials!");
-      return;
-    }
-
+if (!user) {
+  alert("User not signed up yet. Please sign up.");
+  navigate('/SignUp')
+  return;
+}
+const hashedPassword = CryptoJS.SHA256(formData.password).toString();
+if (user.password !== hashedPassword) {
+  alert("Invalid credentials!");
+  // navigate('/LoginForm')
+  return;
+}
+ 
     // Store login session
-    localStorage.setItem("loggedInUser", JSON.stringify(validUser));
+    localStorage.setItem("loggedInUser", JSON.stringify(user));
 
     alert("Login successful!");
-    navigate("/");
+    navigate("/dashboard");
   };
 
   return (

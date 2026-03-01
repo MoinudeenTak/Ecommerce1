@@ -2,67 +2,64 @@ import { Link, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { AiFillHome } from "react-icons/ai";
 import { useState, useEffect } from "react";
+import CryptoJS from "crypto-js";
 const SignUp = () => {
   const {
     register,
     handleSubmit,
-    watch,
-    formState: { errors },
-  } = useForm();
+    // watch,
+    getValues,
+    formState: { errors, isValid },
+  } = useForm({ mode: "onChange" });
   const navigate = useNavigate();
 
-  // const onSubmit = (formData) => {
-  //   const usersList = JSON.parse(localStorage.getItem("users")) || [];
-  //   console.log(usersList);
-
-  //   const userExists = usersList.find((user) => user.email === formData.email);
-
-  //   if (userExists) {
-  //     alert("User already exists!");
-  //     return;
-  //   }
-  //   const newUser = {
-  //     email: formData.email,
-  //     password: formData.password,
-  //   };
-  //   const updatedUsers = [...usersList, newUser];
-
-  //   // usersList.push(newUser);wrong method never mutate 
-  //   // usersList.push(updatedUsers); wrong method
-  //   localStorage.setItem("users", JSON.stringify(updatedUsers));
-
-  //   alert("User saved successfully!");
-  //   navigate("/LoginForm");
-  // };
 
   const [users, setUsers] = useState(() => {
-  return JSON.parse(localStorage.getItem("users")) || [];
-});
- 
-useEffect(() => {
-  localStorage.setItem("users", JSON.stringify(users));
-}, [users]);
- 
-const onSubmit = (formData) => {
-  const userExists = users.find(
-    (user) => user.email === formData.email
-  );
+    return JSON.parse(localStorage.getItem("users")) || [];
+  });
 
-  if (userExists) {
-    alert("User already exists!");
-    return;
-  }
+  useEffect(() => {
+    localStorage.setItem("users", JSON.stringify(users));
+  }, [users]);
 
-  const newUser = {
-    email: formData.email,
-    password: formData.password,
+  const onSubmit = (formData) => {
+   
+    const userExists = users.find((user) => user.email === formData.email);
+
+    if (userExists) {
+      alert("User already exists! Redirecting to login...");
+      navigate("/LoginForm");
+      return;
+    }
+ const hashedPassword = CryptoJS.SHA256(formData.password).toString();
+    const newUser = {
+      email: formData.email,
+      password: hashedPassword,
+    };
+
+    setUsers((prevUsers) => [...prevUsers, newUser]);
+
+    alert("User saved successfully!");
+    navigate("/LoginForm");
   };
 
-  setUsers((prevUsers) => [...prevUsers, newUser]);
+  // for local storage it is good 
+//   const onSubmit = (formData) => {
+//   const users = JSON.parse(localStorage.getItem("users")) || [];
 
-  alert("User saved successfully!");
-   navigate("/LoginForm");
-};
+//   const userExists = users.find(user => user.email === formData.email);
+
+//   if (userExists) {
+//     alert("User already exists!");
+//     return navigate("/LoginForm");
+//   }
+
+//   const updatedUsers = [...users, formData];
+
+//   localStorage.setItem("users", JSON.stringify(updatedUsers));
+
+//   navigate("/LoginForm");
+// };
   return (
     <div className="flex items-center justify-center min-h-screen bg-linear-to-br from-blue-500 via-blue-600 to-purple-700 p-4">
       {/* Home Button */}
@@ -181,21 +178,23 @@ const onSubmit = (formData) => {
             <input
               type="password"
               placeholder="••••••••"
-              {...register(" ConfirmPassword", {
+              {...register("confirmPassword", {
                 required: "Confirm Password is required",
-                pattern: {
-                  value:
-                    /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/,
-                  message: "Password must be same ",
-                },
+                // validate: (value) =>
+                //   value === password || "Passwords do not match",
+                validate: (value) =>
+                  value === getValues("password") || "Passwords do not match",
               })}
               className="w-full px-4 py-3 text-sm border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition duration-200 bg-gray-50 hover:bg-white"
             />
-            {errors.password && <p>{errors.password.message}</p>}
+            {errors.confirmPassword && (
+              <p style={{ color: "red" }}>{errors.confirmPassword.message}</p>
+            )}
           </div>
 
           <button
             type="submit"
+            disabled={!isValid}
             className="w-full bg-linear-to-r from-blue-500 to-purple-600 text-white font-bold py-3 rounded-xl hover:shadow-xl hover:scale-105 transition duration-200 mt-10 active:scale-95"
           >
             Create Your Account
