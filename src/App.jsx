@@ -5,6 +5,9 @@ import Home from "./Components/Pages/Home";
 import Dashboard from "./Components/Pages/Dashboard";
 import CartItem from './Components/Pages/CartItem'
 import Payment from "./Components/Pages/Payment";
+import useAutoLogout from './Components/Pages/Logout'
+import { useCart } from "./Components/Store/ContextApi";
+import Logout from './Components/Pages/Logout'
 const router = createBrowserRouter([
   {
     path: "/",
@@ -29,6 +32,14 @@ const router = createBrowserRouter([
     element: (
       <div>
         <CartItem />
+      </div>
+    ),
+  },
+  {
+    path: "/",
+    element: (
+      <div>
+        <Logout />
       </div>
     ),
   },
@@ -59,6 +70,9 @@ const router = createBrowserRouter([
 ]);
 
 function App() {
+  //  const { isAuthenticated, logout } = useCart();
+  // useAutoLogout(isAuthenticated, logout, 300000);
+  
   return <RouterProvider router={router} />;
 }
 
