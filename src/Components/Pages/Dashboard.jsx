@@ -1,12 +1,19 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { AiFillHome } from "react-icons/ai";
 import { FaRupeeSign } from "react-icons/fa";
 import { useCart } from "../Store/ContextApi";
 import { FaSignInAlt } from "react-icons/fa";
-
+import useAutoLogout from "./Logout";
 const Dashboard = () => {
-  const { logout } = useCart();
+  const { logout, isAuthenticated } = useCart();
+// useAutoLogout(logout, 1 * 90 * 100); // 1 minute timeout for demo
+  const navigate = useNavigate();
+  useEffect(() => {
+    if (!isAuthenticated) {
+      navigate("/", { replace: true });
+    }
+  }, [isAuthenticated, navigate]);
   const [stats] = useState({
     totalProducts: 0,
     totalOrders: 0,
@@ -27,6 +34,10 @@ const Dashboard = () => {
     }));
   };
 
+  const handleLogout = () => {
+    logout();
+    navigate("/", { replace: true });
+  };
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Home Button */}
@@ -50,15 +61,14 @@ const Dashboard = () => {
           </div>
 
           {/* Right Side - Logout */}
-          <Link to="/">
-            <button
-              onClick={logout}
-              className="flex items-center gap-2 bg-red-600 text-white px-5 py-2.5 rounded-lg hover:bg-red-700 transition duration-200 text-sm font-semibold shadow-sm"
-            >
-              <FaSignInAlt />
-              Logout
-            </button>
-          </Link>
+
+          <button
+            onClick={handleLogout}
+            className="flex items-center gap-2 bg-red-600 text-white px-5 py-2.5 rounded-lg hover:bg-red-700 transition duration-200 text-sm font-semibold shadow-sm"
+          >
+            <FaSignInAlt />
+            Logout
+          </button>
         </div>
       </div>
 

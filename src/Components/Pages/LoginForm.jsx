@@ -3,8 +3,12 @@ import { useForm } from "react-hook-form";
 import { AiFillHome } from "react-icons/ai";
 import { MdEmail, MdLock } from "react-icons/md";
 import CryptoJS from "crypto-js";
+import { toast } from "react-toastify";
+import { useCart } from "../Store/ContextApi";
 const LoginForm = () => {
   const navigate = useNavigate();
+  const { login } = useCart();
+
   const {
     register,
     handleSubmit,
@@ -14,26 +18,31 @@ const LoginForm = () => {
   const onSubmit = (formData) => {
     // console.log("Form Data", formData);
     const users = JSON.parse(localStorage.getItem("users")) || [];
-    
-const user = users.find(user => user.email === formData.email);
 
-if (!user) {
-  alert("User not signed up yet. Please sign up.");
-  navigate('/SignUp')
-  return;
-}
-const hashedPassword = CryptoJS.SHA256(formData.password).toString();
-if (user.password !== hashedPassword) {
-  alert("Invalid credentials!");
-  // navigate('/LoginForm')
-  return;
-}
- 
-    // Store login session
+    const user = users.find((user) => user.email === formData.email);
+
+    if (!user) {
+      toast.error("User not signed up yet. Please sign up.");
+      // navigate('/SignUp')
+      return;
+    }
+    const hashedPassword = CryptoJS.SHA256(formData.password).toString();
+    if (user.password !== hashedPassword) {
+      toast.error("Invalid credentials!");
+      // navigate('/LoginForm')
+      return;
+    }
+
+    // create fake token (in real app comes from backend)
+    const fakeToken = "my-secure-token";
+
+    login(fakeToken); // 🔥 THIS updates isAuthenticated
+
     localStorage.setItem("loggedInUser", JSON.stringify(user));
 
-    alert("Login successful!");
-    navigate("/dashboard");
+    toast.success("Login successful!");
+
+    navigate("/dashboard", { replace: true });
   };
 
   return (
