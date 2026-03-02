@@ -3,6 +3,7 @@ import { useForm } from "react-hook-form";
 import { AiFillHome } from "react-icons/ai";
 import { useState, useEffect } from "react";
 import CryptoJS from "crypto-js";
+import { toast } from "react-toastify";
 const SignUp = () => {
   const {
     register,
@@ -27,7 +28,7 @@ const SignUp = () => {
     const userExists = users.find((user) => user.email === formData.email);
 
     if (userExists) {
-      alert("User already exists! Redirecting to login...");
+      toast.error("User already exists! Redirecting to login...");
       navigate("/LoginForm");
       return;
     }
@@ -39,7 +40,7 @@ const SignUp = () => {
 
     setUsers((prevUsers) => [...prevUsers, newUser]);
 
-    alert("User saved successfully!");
+   toast.success("User saved successfully!");
     navigate("/LoginForm");
   };
 

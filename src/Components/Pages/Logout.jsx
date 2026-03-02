@@ -1,42 +1,43 @@
-import { useEffect, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect } from "react";
 
-
-const useAutoLogout = (isAuthenticated, logout, timeout = 300000) => {
-  const navigate = useNavigate();
-  const timer = useRef(null);
-
-  const resetTimer = () => {
-    if (timer.current) {
-      clearTimeout(timer.current);
-    }
-
-    timer.current = setTimeout(() => {
-      logout(); // clear auth state
-      navigate("/");
-      alert("Session expired due to inactivity");
-    }, timeout);
-  };
-
+const useAutoLogout = (logout, timeout) => {
   useEffect(() => {
-    if (!isAuthenticated) return;
+    const updateActivity = () => {
+      localStorage.setItem("lastActivity", Date.now());
+    };
 
-    const events = ["mousemove", "keydown", "click", "scroll", "touchstart"];
+    const checkActivity = () => {
+      const lastActivity = localStorage.getItem("lastActivity");
+      const now = Date.now();
+
+      if (lastActivity && now - lastActivity > timeout) {
+        logout();
+      }
+    };
+
+    const events = [
+      "mousemove",
+      "keydown",
+      "click",
+      "scroll",
+      "touchstart",
+    ];
 
     events.forEach((event) =>
-      window.addEventListener(event, resetTimer)
+      window.addEventListener(event, updateActivity)
     );
 
-    resetTimer(); // start timer initially
+    const interval = setInterval(checkActivity, 5000);
+
+    updateActivity();
 
     return () => {
-      if (timer.current) clearTimeout(timer.current);
-
       events.forEach((event) =>
-        window.removeEventListener(event, resetTimer)
+        window.removeEventListener(event, updateActivity)
       );
+      clearInterval(interval);
     };
-  }, [isAuthenticated]);
+  }, [logout, timeout]);
 };
 
 export default useAutoLogout;

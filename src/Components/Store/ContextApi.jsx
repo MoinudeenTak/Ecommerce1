@@ -1,9 +1,4 @@
-import {
-  createContext,
-  useContext,
-  useReducer,
-  useEffect,
-} from "react";
+import { createContext, useContext, useReducer, useEffect } from "react";
 
 const CartContext = createContext();
 
@@ -54,7 +49,6 @@ function cartReducer(state, action) {
 }
 
 export function CartProvider({ children }) {
- 
   const [state, dispatch] = useReducer(cartReducer, initialState);
 
   const login = (token) => {
@@ -62,18 +56,38 @@ export function CartProvider({ children }) {
     dispatch({ type: "LOGIN" });
   };
 
-  const logout = () => {
+  const logout = (reason = "manual") => {
     localStorage.removeItem("token");
-
-    // 🔥 for multi-tab sync
-    localStorage.setItem("logout", Date.now());
-
+    localStorage.removeItem("loggedInUser");
+    // // 🔥 for multi-tab sync
+    // localStorage.setItem("logout", Date.now());
     dispatch({ type: "LOGOUT" });
+     if (reason === "auto") {
+    toast.error("Session expired. Please login again.");
+  }
   };
 
   useEffect(() => {
     localStorage.setItem("cart", JSON.stringify(state.cartItems));
   }, [state.cartItems]);
+  // 🔥 ADD THIS FOR MULTI TAB LOGOUT
+  useEffect(() => {
+    const syncAuth = (event) => {
+      if (event.key === "token") {
+        if (event.newValue) {
+          dispatch({ type: "LOGIN" });
+        } else {
+          dispatch({ type: "LOGOUT" });
+        }
+      }
+    };
+
+    window.addEventListener("storage", syncAuth);
+
+    return () => {
+      window.removeEventListener("storage", syncAuth);
+    };
+  }, []);
 
   const objValue = {
     cartItems: state.cartItems,

@@ -6,7 +6,8 @@ import Dashboard from "./Components/Pages/Dashboard";
 import CartItem from './Components/Pages/CartItem'
 import Payment from "./Components/Pages/Payment";
 import useAutoLogout from './Components/Pages/Logout'
-import { useCart } from "./Components/Store/ContextApi";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import Logout from './Components/Pages/Logout'
 const router = createBrowserRouter([
   {
@@ -73,7 +74,10 @@ function App() {
   //  const { isAuthenticated, logout } = useCart();
   // useAutoLogout(isAuthenticated, logout, 300000);
   
-  return <RouterProvider router={router} />;
+  return<>
+  <ToastContainer />
+  <RouterProvider router={router} />;
+  </> 
 }
 
 export default App;
