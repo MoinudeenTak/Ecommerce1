@@ -36,7 +36,7 @@ const LoginForm = () => {
     // create fake token (in real app comes from backend)
     const fakeToken = "my-secure-token";
 
-    login(fakeToken); // 🔥 THIS updates isAuthenticated
+    login(fakeToken, user); // 🔥 THIS updates isAuthenticated
 
     localStorage.setItem("loggedInUser", JSON.stringify(user));
 

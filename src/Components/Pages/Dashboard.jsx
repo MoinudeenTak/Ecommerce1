@@ -1,237 +1,172 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { AiFillHome } from "react-icons/ai";
-import { FaRupeeSign } from "react-icons/fa";
+import { FaRupeeSign, FaSignInAlt, FaUserCircle } from "react-icons/fa";
 import { useCart } from "../Store/ContextApi";
-import { FaSignInAlt } from "react-icons/fa";
-import useAutoLogout from "./Logout";
+
 const Dashboard = () => {
-  const { logout, isAuthenticated } = useCart();
-// useAutoLogout(logout, 1 * 90 * 100); // 1 minute timeout for demo
+  const { logout, isAuthenticated, currentUser } = useCart();
   const navigate = useNavigate();
+
+  // ✅ Redirect if not authenticated
   useEffect(() => {
     if (!isAuthenticated) {
       navigate("/", { replace: true });
     }
   }, [isAuthenticated, navigate]);
+
+  // Stats (can fetch from backend later)
   const [stats] = useState({
-    totalProducts: 0,
-    totalOrders: 0,
-    totalRevenue: 0,
-    totalUsers: 0,
+    totalProducts: 24,
+    totalOrders: 18,
+    totalRevenue: 76000,
+    totalUsers: 12,
   });
 
-  const [filters, setFilters] = useState({
-    category: "all",
-    dateRange: "7days",
-    status: "all",
-  });
-
-  const handleFilterChange = (filterName, value) => {
-    setFilters((prev) => ({
-      ...prev,
-      [filterName]: value,
-    }));
-  };
-
+  // Logout handler
   const handleLogout = () => {
     logout();
     navigate("/", { replace: true });
   };
+
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-100">
+
       {/* Home Button */}
       <Link
         to="/"
-        className="fixed top-6 left-6 text-white bg-blue-600 hover:bg-blue-700 p-3 rounded-full transition duration-200 z-10"
-        title="Go Home"
+        className="fixed top-6 left-6 text-white bg-blue-600 hover:bg-blue-700 p-3 rounded-full shadow-lg transition z-10"
       >
-        <AiFillHome size={24} />
+        <AiFillHome size={20} />
       </Link>
 
-      {/* Header */}
-      <div className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-8 py-6 flex items-center justify-between">
-          {/* Left Side - Title */}
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
-            <p className="text-gray-500 mt-1 text-sm">
-              Welcome back! Here's your business overview
-            </p>
+      {/* Safe rendering: show loading until currentUser is ready */}
+      {!currentUser ? (
+        <div className="flex items-center justify-center min-h-screen text-gray-600 text-lg">
+          Loading user data...
+        </div>
+      ) : (
+        <>
+          {/* HEADER */}
+          <div className="bg-white shadow-md border-b">
+            <div className="max-w-7xl mx-auto px-6 py-5 flex items-center justify-between">
+
+              {/* Left: User info */}
+              <div>
+                <h1 className="text-2xl font-bold text-gray-800">
+                  Welcome, {currentUser.name} 👋
+                </h1>
+                <p className="text-gray-500 text-sm">{currentUser.email}</p>
+              </div>
+
+              {/* Right: Role + logout */}
+              <div className="flex items-center gap-6">
+                <div className="flex items-center gap-2 text-gray-600">
+                  <FaUserCircle size={28} />
+                  <span className="text-sm font-medium capitalize">
+                    {currentUser.role}
+                  </span>
+                </div>
+
+                <button
+                  onClick={handleLogout}
+                  className="flex items-center gap-2 bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition shadow"
+                >
+                  <FaSignInAlt />
+                  Logout
+                </button>
+              </div>
+            </div>
           </div>
 
-          {/* Right Side - Logout */}
+          {/* MAIN CONTENT */}
+          <div className="max-w-7xl mx-auto px-6 py-10">
 
-          <button
-            onClick={handleLogout}
-            className="flex items-center gap-2 bg-red-600 text-white px-5 py-2.5 rounded-lg hover:bg-red-700 transition duration-200 text-sm font-semibold shadow-sm"
-          >
-            <FaSignInAlt />
-            Logout
-          </button>
-        </div>
-      </div>
-
-      {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-8 py-8">
-        {/* Filter Section */}
-        <div className="bg-white rounded-lg shadow p-6 mb-8">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Filters</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Category
-              </label>
-              <select
-                value={filters.category}
-                onChange={(e) => handleFilterChange("category", e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              >
-                <option value="all">All Categories</option>
-                <option value="electronics">Electronics</option>
-                <option value="clothing">Clothing</option>
-                <option value="home">Home & Garden</option>
-                <option value="sports">Sports</option>
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Date Range
-              </label>
-              <select
-                value={filters.dateRange}
-                onChange={(e) =>
-                  handleFilterChange("dateRange", e.target.value)
+            {/* STATS */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+              <StatCard title="Total Products" value={stats.totalProducts} />
+              <StatCard title="Total Orders" value={stats.totalOrders} />
+              <StatCard
+                title="Total Revenue"
+                value={
+                  <span className="flex items-center gap-1">
+                    <FaRupeeSign /> {stats.totalRevenue}
+                  </span>
                 }
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              >
-                <option value="7days">Last 7 Days</option>
-                <option value="30days">Last 30 Days</option>
-                <option value="90days">Last 90 Days</option>
-                <option value="1year">Last Year</option>
-              </select>
+              />
+
+              {/* Admin-only */}
+              {currentUser.role === "admin" && (
+                <StatCard title="Total Users" value={stats.totalUsers} />
+              )}
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Order Status
-              </label>
-              <select
-                value={filters.status}
-                onChange={(e) => handleFilterChange("status", e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              >
-                <option value="all">All Status</option>
-                <option value="pending">Pending</option>
-                <option value="completed">Completed</option>
-                <option value="cancelled">Cancelled</option>
-              </select>
+            {/* RECENT ORDERS */}
+            <div className="bg-white rounded-xl shadow-md p-6 mb-10">
+              <h2 className="text-xl font-semibold text-gray-800 mb-4">
+                Recent Orders
+              </h2>
+
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b text-gray-600">
+                      <th className="text-left py-3">Order ID</th>
+                      <th className="text-left py-3">Customer</th>
+                      <th className="text-left py-3">Amount</th>
+                      <th className="text-left py-3">Status</th>
+                    </tr>
+                  </thead>
+
+                  <tbody>
+                    <tr className="border-b hover:bg-gray-50">
+                      <td className="py-3">#1023</td>
+                      <td>John Doe</td>
+                      <td>₹5000</td>
+                      <td>
+                        <span className="bg-green-100 text-green-600 px-3 py-1 rounded-full text-xs">
+                          Completed
+                        </span>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
             </div>
 
-            <div className="flex items-end">
-              <button className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium">
-                Apply Filters
-              </button>
-            </div>
-          </div>
-        </div>
+            {/* TOP PRODUCTS */}
+            <div className="bg-white rounded-xl shadow-md p-6">
+              <h2 className="text-xl font-semibold text-gray-800 mb-6">
+                Top Products
+              </h2>
 
-        {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <div className="bg-white rounded-lg shadow p-6 hover:shadow-lg transition border-l-4 border-blue-500">
-            <h3 className="text-gray-600 text-sm font-medium mb-2">
-              Total Products
-            </h3>
-            <p className="text-3xl font-bold text-gray-900">
-              {stats.totalProducts}
-            </p>
-          </div>
-          <div className="bg-white rounded-lg shadow p-6 hover:shadow-lg transition border-l-4 border-green-500">
-            <h3 className="text-gray-600 text-sm font-medium mb-2">
-              Total Orders
-            </h3>
-            <p className="text-3xl font-bold text-gray-900">
-              {stats.totalOrders}
-            </p>
-          </div>
-          <div className="bg-white rounded-lg shadow p-6 hover:shadow-lg transition border-l-4 border-purple-500">
-            <h3 className="text-gray-600 text-sm font-medium mb-2">
-              Total Revenue
-            </h3>
-            <p className="text-3xl font-bold text-gray-900">
-              <FaRupeeSign />
-              {stats.totalRevenue}
-            </p>
-          </div>
-          <div className="bg-white rounded-lg shadow p-6 hover:shadow-lg transition border-l-4 border-orange-500">
-            <h3 className="text-gray-600 text-sm font-medium mb-2">
-              Total Users
-            </h3>
-            <p className="text-3xl font-bold text-gray-900">
-              {stats.totalUsers}
-            </p>
-          </div>
-        </div>
-
-        {/* Recent Orders */}
-        <div className="bg-white rounded-lg shadow p-6 mb-8">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">
-            Recent Orders
-          </h2>
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b">
-                  <th className="text-left py-2 px-4 font-semibold text-gray-700">
-                    Order ID
-                  </th>
-                  <th className="text-left py-2 px-4 font-semibold text-gray-700">
-                    Customer
-                  </th>
-                  <th className="text-left py-2 px-4 font-semibold text-gray-700">
-                    Amount
-                  </th>
-                  <th className="text-left py-2 px-4 font-semibold text-gray-700">
-                    Status
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr className="border-b hover:bg-gray-50">
-                  <td className="py-2 px-4 text-gray-600">-</td>
-                  <td className="py-2 px-4 text-gray-600">-</td>
-                  <td className="py-2 px-4 text-gray-600">-</td>
-                  <td className="py-2 px-4 text-gray-600">-</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        {/* Top Products */}
-        <div className="bg-white rounded-lg shadow p-6">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">
-            Top Products
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="bg-linear-to-br from-blue-50 to-blue-100 rounded-lg p-4 text-center font-semibold text-gray-700 hover:shadow-md transition">
-              Product 1
-            </div>
-            <div className="bg-linear-to-br from-green-50 to-green-100 rounded-lg p-4 text-center font-semibold text-gray-700 hover:shadow-md transition">
-              Product 2
-            </div>
-            <div className="bg-linear-to-br from-purple-50 to-purple-100 rounded-lg p-4 text-center font-semibold text-gray-700 hover:shadow-md transition">
-              Product 3
-            </div>
-            <div className="bg-linear-to-br from-orange-50 to-orange-100 rounded-lg p-4 text-center font-semibold text-gray-700 hover:shadow-md transition">
-              Product 4
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+                <ProductCard name="Product 1" />
+                <ProductCard name="Product 2" />
+                <ProductCard name="Product 3" />
+                <ProductCard name="Product 4" />
+              </div>
             </div>
           </div>
-        </div>
-      </div>
+        </>
+      )}
     </div>
   );
 };
+
+// Stat Card Component
+const StatCard = ({ title, value }) => (
+  <div className="bg-white rounded-xl shadow-md p-6 hover:shadow-xl transition duration-300 border-l-4 border-blue-500">
+    <h3 className="text-gray-500 text-sm mb-2">{title}</h3>
+    <p className="text-2xl font-bold text-gray-800">{value}</p>
+  </div>
+);
+
+// Product Card Component
+const ProductCard = ({ name }) => (
+  <div className="bg-linear-to-br from-blue-50 to-blue-100 rounded-xl p-5 text-center font-semibold text-gray-700 hover:shadow-lg transition">
+    {name}
+  </div>
+);
 
 export default Dashboard;
