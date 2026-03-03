@@ -1,11 +1,12 @@
 import { createContext, useContext, useReducer, useEffect } from "react";
-
+import { toast } from "react-toastify";
 const CartContext = createContext();
 
 const initialState = {
   cartItems: JSON.parse(localStorage.getItem("cart")) || [],
   // isAuthenticated: !!localStorage.getItem("token"), same line below
   isAuthenticated: localStorage.getItem("token") ? true : false,
+  currentUser: JSON.parse(localStorage.getItem("loggedInUser")) || null,
 };
 
 function cartReducer(state, action) {
@@ -38,10 +39,10 @@ function cartReducer(state, action) {
       };
 
     case "LOGIN":
-      return { ...state, isAuthenticated: true };
+      return { ...state, isAuthenticated: true, currentUser: action.payload };
 
     case "LOGOUT":
-      return { ...state, isAuthenticated: false };
+      return { ...state, isAuthenticated: false, currentUser: null };
 
     default:
       return state;
@@ -51,20 +52,23 @@ function cartReducer(state, action) {
 export function CartProvider({ children }) {
   const [state, dispatch] = useReducer(cartReducer, initialState);
 
-  const login = (token) => {
+  // ✅ UPDATED LOGIN FUNCTION
+  const login = (token, userData) => {
     localStorage.setItem("token", token);
-    dispatch({ type: "LOGIN" });
-  };
+    localStorage.setItem("loggedInUser", JSON.stringify(userData));
 
-  const logout = (reason = "manual") => {
+    dispatch({
+      type: "LOGIN",
+      payload: userData, // 🔥 send user to reducer
+    });
+  };
+  const logout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("loggedInUser");
-    // // 🔥 for multi-tab sync
-    // localStorage.setItem("logout", Date.now());
+    // 🔥 for multi-tab sync
+    localStorage.setItem("logout", Date.now());
     dispatch({ type: "LOGOUT" });
-     if (reason === "auto") {
-    toast.error("Session expired. Please login again.");
-  }
+    toast.error("Please login again.");
   };
 
   useEffect(() => {
@@ -75,7 +79,9 @@ export function CartProvider({ children }) {
     const syncAuth = (event) => {
       if (event.key === "token") {
         if (event.newValue) {
-          dispatch({ type: "LOGIN" });
+           const user = JSON.parse(localStorage.getItem("loggedInUser"));
+          dispatch({ type: "LOGIN", payload: user });
+          
         } else {
           dispatch({ type: "LOGOUT" });
         }
@@ -95,6 +101,7 @@ export function CartProvider({ children }) {
     isAuthenticated: state.isAuthenticated,
     login,
     logout,
+    currentUser: state.currentUser,
   };
 
   return (

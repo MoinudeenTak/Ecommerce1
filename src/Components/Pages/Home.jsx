@@ -8,14 +8,17 @@ import {
 } from "react-icons/fa";
 import Products from "./Products";
 const Home = () => {
-  const { cartItems, logout, isAuthenticated,} = useCart();
+  const { cartItems, logout, isAuthenticated, currentUser } = useCart();
 
   return (
     <>
       <header className="bg-white shadow-md sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 py-3">
           <div className="flex items-center justify-between gap-4 mb-3">
-           <Link to='/'> <h1 className="text-2xl font-bold text-blue-600">EcommercePro</h1></Link>
+            <Link to="/">
+              {" "}
+              <h1 className="text-2xl font-bold text-blue-600">EcommercePro</h1>
+            </Link>
             <div className="flex-1 max-w-md">
               <div className="flex items-center bg-gray-100 rounded-full px-4 py-2">
                 <input
@@ -28,7 +31,15 @@ const Home = () => {
                 </button>
               </div>
             </div>
-
+            {/* USER INFO */}
+            {isAuthenticated && currentUser && (
+              <div className="text-right">
+                <h1 className="text-lg font-semibold text-gray-800">
+                  Welcome, {currentUser.name} 👋
+                </h1>
+                <p className="text-gray-500 text-xs">{currentUser.email}</p>
+              </div>
+            )}
             <div className="flex items-center gap-4">
               <Link to="/Cart">
                 <button className="relative text-gray-700 hover:text-blue-600 text-xl">
@@ -58,9 +69,7 @@ const Home = () => {
 
                 <>
                   <Link to="/LoginForm">
-                    <button
-                      className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 text-sm font-semibold"
-                    >
+                    <button className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 text-sm font-semibold">
                       <FaSignInAlt /> Login
                     </button>
                   </Link>
