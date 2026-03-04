@@ -13,8 +13,7 @@ const SignUp = () => {
     formState: { errors, isValid },
   } = useForm({ mode: "onChange" });
   const navigate = useNavigate();
-
-
+  const [role, setRole] = useState("user");
   const [users, setUsers] = useState(() => {
     return JSON.parse(localStorage.getItem("users")) || [];
   });
@@ -24,43 +23,35 @@ const SignUp = () => {
   }, [users]);
 
   const onSubmit = (formData) => {
-   
     const userExists = users.find((user) => user.email === formData.email);
 
     if (userExists) {
       toast.error("User already exists! Redirecting to login...");
-      navigate("/LoginForm");
+      navigate("/login", { replace: true });
       return;
     }
- const hashedPassword = CryptoJS.SHA256(formData.password).toString();
+
+    // 🔐 Optional: Admin secret protection
+    if (role === "admin" && formData.adminSecret !== "1234") {
+      toast.error("Invalid Admin Secret Key");
+      return;
+    }
+
+    const hashedPassword = CryptoJS.SHA256(formData.password).toString();
+
     const newUser = {
+      firstname: formData.firstname,
+      lastname: formData.lastname,
       email: formData.email,
       password: hashedPassword,
+      role: role, // 🔥 SAVE ROLE
     };
 
     setUsers((prevUsers) => [...prevUsers, newUser]);
 
-   toast.success("User saved successfully!");
-    navigate("/LoginForm");
+    toast.success("Account created successfully!");
+    navigate("/login", { replace: true });
   };
-
-  // for local storage it is good 
-//   const onSubmit = (formData) => {
-//   const users = JSON.parse(localStorage.getItem("users")) || [];
-
-//   const userExists = users.find(user => user.email === formData.email);
-
-//   if (userExists) {
-//     alert("User already exists!");
-//     return navigate("/LoginForm");
-//   }
-
-//   const updatedUsers = [...users, formData];
-
-//   localStorage.setItem("users", JSON.stringify(updatedUsers));
-
-//   navigate("/LoginForm");
-// };
   return (
     <div className="flex items-center justify-center min-h-screen bg-linear-to-br from-blue-500 via-blue-600 to-purple-700 p-4">
       {/* Home Button */}
@@ -192,7 +183,49 @@ const SignUp = () => {
               <p style={{ color: "red" }}>{errors.confirmPassword.message}</p>
             )}
           </div>
+          {/* Role Selection */}
+          <div className="mt-6">
+            <label className="block text-xs font-semibold text-gray-700 mb-3 uppercase tracking-wider">
+              Select Role
+            </label>
 
+            <div className="flex gap-4">
+              <div
+                onClick={() => setRole("user")}
+                className={`flex-1 text-center py-3 rounded-xl cursor-pointer border transition ${
+                  role === "user"
+                    ? "bg-blue-500 text-white border-blue-500"
+                    : "bg-gray-50 border-gray-300"
+                }`}
+              >
+                User
+              </div>
+
+              <div
+                onClick={() => setRole("admin")}
+                className={`flex-1 text-center py-3 rounded-xl cursor-pointer border transition ${
+                  role === "admin"
+                    ? "bg-purple-600 text-white border-purple-600"
+                    : "bg-gray-50 border-gray-300"
+                }`}
+              >
+                Admin
+              </div>
+            </div>
+          </div>
+          {role === "admin" && (
+            <div className="mt-4">
+              <label className="block text-xs font-semibold text-gray-700 mb-2 uppercase tracking-wider">
+                Admin Secret Key
+              </label>
+              <input
+                type="password"
+                placeholder="Enter Admin Key"
+                {...register("adminSecret")}
+                className="w-full px-4 py-3 text-sm border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 outline-none transition bg-gray-50"
+              />
+            </div>
+          )}
           <button
             type="submit"
             disabled={!isValid}
@@ -204,7 +237,7 @@ const SignUp = () => {
           <p className="text-center text-gray-600 text-sm font-medium">
             Already have an account?
             <Link
-              to="/LoginForm"
+              to="/login"
               className="text-blue-600 font-bold hover:text-blue-700 transition"
             >
               Log in here

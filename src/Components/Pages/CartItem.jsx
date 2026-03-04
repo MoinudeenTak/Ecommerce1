@@ -5,8 +5,8 @@ import { Link } from "react-router-dom";
 
 const CartItem = () => {
   const { cartItems, dispatch } = useCart();
-  
- 
+  console.log(cartItems);
+
   const navigate = useNavigate();
 
   const totalPrice = cartItems.reduce(
@@ -30,7 +30,6 @@ const CartItem = () => {
       <h2 className="text-3xl font-bold mb-8">Shopping Cart</h2>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        
         {/* Cart Items */}
         <div className="lg:col-span-2 space-y-6">
           {cartItems.map((item) => (
@@ -49,14 +48,37 @@ const CartItem = () => {
                   {item.title}
                 </h4>
 
-                <p className="text-gray-500 mt-1">
-                  ₹{item.price}
-                </p>
+                <p className="text-gray-500 mt-1">₹{item.price}</p>
 
                 <div className="mt-3 flex items-center gap-4">
-                  <span className="bg-gray-200 px-3 py-1 rounded-full text-sm">
-                    Qty: {item.quantity}
-                  </span>
+                  <div className="flex items-center gap-3">
+                    <button
+                      onClick={() =>
+                        dispatch({ type: "DECREASE_QTY", payload: item.id })
+                      }
+                      className="bg-gray-200 px-3 py-1 rounded-lg hover:bg-gray-300"
+                    >
+                      -
+                    </button>
+
+                    <span className="px-3 py-1 bg-gray-100 rounded-lg">
+                      {item.quantity}
+                    </span>
+
+                    <button
+                      onClick={() =>
+                        dispatch({ type: "INCREASE_QTY", payload: item.id })
+                      }
+                      disabled={item.quantity >= item.stock}
+                      className={`px-3 py-1 rounded-lg ${
+                        item.quantity >= item.stock
+                          ? "bg-gray-300 cursor-not-allowed"
+                          : "bg-gray-200 hover:bg-gray-300"
+                      }`}
+                    >
+                      +
+                    </button>
+                  </div>
 
                   <button
                     onClick={() =>
@@ -81,17 +103,12 @@ const CartItem = () => {
 
         {/* Cart Summary */}
         <div className="bg-white shadow-md rounded-xl p-6 h-fit">
-          <h3 className="text-xl font-semibold mb-6">
-            Order Summary
-          </h3>
+          <h3 className="text-xl font-semibold mb-6">Order Summary</h3>
 
           <div className="flex justify-between mb-4 text-gray-600">
             <span>Total Items</span>
             <span>
-              {cartItems.reduce(
-                (acc, item) => acc + item.quantity,
-                0
-              )}
+              {cartItems.reduce((acc, item) => acc + item.quantity, 0)}
             </span>
           </div>
 
@@ -99,10 +116,10 @@ const CartItem = () => {
             <span>Total Price</span>
             <span>₹{totalPrice}</span>
           </div>
-              <Link to='/Payment'>
-          <button className="w-full bg-black text-white py-3 rounded-lg hover:bg-gray-800 transition">
-            Proceed to Checkout
-          </button>
+          <Link to="/Payment">
+            <button className="w-full bg-black text-white py-3 rounded-lg hover:bg-gray-800 transition">
+              Proceed to Checkout
+            </button>
           </Link>
         </div>
       </div>

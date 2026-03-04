@@ -1,42 +1,56 @@
 import { useEffect, useRef } from "react";
-import { useNavigate } from "react-router-dom";
 
-
-const useAutoLogout = (isAuthenticated, logout, timeout = 300000) => {
-  const navigate = useNavigate();
-  const timer = useRef(null);
-
-  const resetTimer = () => {
-    if (timer.current) {
-      clearTimeout(timer.current);
-    }
-
-    timer.current = setTimeout(() => {
-      logout(); // clear auth state
-      navigate("/");
-      alert("Session expired due to inactivity");
-    }, timeout);
-  };
+const useMultiTabAutoLogout = (
+  logout,
+  isAuthenticated,
+  timeout = 500000
+) => {
+  const timerRef = useRef(null);
 
   useEffect(() => {
     if (!isAuthenticated) return;
 
-    const events = ["mousemove", "keydown", "click", "scroll", "touchstart"];
+    const resetTimer = () => {
+      clearTimeout(timerRef.current);
+
+      localStorage.setItem("last-activity", Date.now());
+
+      timerRef.current = setTimeout(() => {
+        localStorage.setItem("logout-event", Date.now());
+        logout();
+      }, timeout);
+    };
+
+    const handleStorage = (event) => {
+      if (event.key === "logout-event") {
+        logout();
+      }
+
+      if (event.key === "last-activity") {
+        resetTimer();
+      }
+    };
+
+    const events = ["mousemove", "keydown", "click", "scroll"];
 
     events.forEach((event) =>
       window.addEventListener(event, resetTimer)
     );
 
-    resetTimer(); // start timer initially
+    window.addEventListener("storage", handleStorage);
+
+    resetTimer();
 
     return () => {
-      if (timer.current) clearTimeout(timer.current);
+      clearTimeout(timerRef.current);
 
       events.forEach((event) =>
         window.removeEventListener(event, resetTimer)
       );
+
+      window.removeEventListener("storage", handleStorage);
     };
-  }, [isAuthenticated]);
+  }, [logout, isAuthenticated, timeout]);
 };
 
-export default useAutoLogout;
+export default useMultiTabAutoLogout;

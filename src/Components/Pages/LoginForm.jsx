@@ -16,34 +16,34 @@ const LoginForm = () => {
   } = useForm();
 
   const onSubmit = (formData) => {
-    // console.log("Form Data", formData);
-    const users = JSON.parse(localStorage.getItem("users")) || [];
+  const users = JSON.parse(localStorage.getItem("users")) || [];
 
-    const user = users.find((user) => user.email === formData.email);
+  const user = users.find((user) => user.email === formData.email);
 
-    if (!user) {
-      toast.error("User not signed up yet. Please sign up.");
-      // navigate('/SignUp')
-      return;
-    }
-    const hashedPassword = CryptoJS.SHA256(formData.password).toString();
-    if (user.password !== hashedPassword) {
-      toast.error("Invalid credentials!");
-      // navigate('/LoginForm')
-      return;
-    }
+  if (!user) {
+    toast.error("User not signed up yet. Please sign up.");
+    return;
+  }
 
-    // create fake token (in real app comes from backend)
-    const fakeToken = "my-secure-token";
+  const hashedPassword = CryptoJS.SHA256(formData.password).toString();
 
-    login(fakeToken, user); // 🔥 THIS updates isAuthenticated
+  if (user.password !== hashedPassword) {
+    toast.error("Invalid credentials!");
+    return;
+  }
 
-    localStorage.setItem("loggedInUser", JSON.stringify(user));
+  const fakeToken = "my-secure-token";
 
-    toast.success("Login successful!");
+  // ✅ Store session properly
+  sessionStorage.setItem("loggedInUser", JSON.stringify(user));
+  sessionStorage.setItem("token", fakeToken);
 
-    navigate("/dashboard", { replace: true });
-  };
+  login(fakeToken, user);
+
+  toast.success("Login successful!");
+
+  navigate("/dashboard", { replace: true });
+};
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-linear-to-br from-blue-500 via-blue-600 to-purple-700 p-4 relative">
@@ -148,7 +148,7 @@ const LoginForm = () => {
         <p className="text-center text-gray-600 text-sm mt-6">
           Don't have an account?
           <Link
-            to="/SignUp"
+            to="/signup"
             className="text-blue-600 font-semibold hover:underline ml-1"
           >
             Create Your Account

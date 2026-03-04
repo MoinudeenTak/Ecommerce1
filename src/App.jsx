@@ -3,81 +3,53 @@ import LoginForm from "./Components/Pages/LoginForm";
 import SignUp from "./Components/Pages/SignUp";
 import Home from "./Components/Pages/Home";
 import Dashboard from "./Components/Pages/Dashboard";
-import CartItem from './Components/Pages/CartItem'
+import CartItem from "./Components/Pages/CartItem";
 import Payment from "./Components/Pages/Payment";
-import useAutoLogout from './Components/Pages/Logout'
-import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import Logout from './Components/Pages/Logout'
+import { useCart } from "./Components/Store/ContextApi";
+import useMultiTabAutoLogout from "./Components/Pages/Logout";
+import { ToastContainer } from "react-toastify";
+import AdminRoute from "./Components/Pages/AdminRoute";
 const router = createBrowserRouter([
   {
     path: "/",
-    element: (
-      <div>
-        <Home />
-      </div>
-    ),
+    element: <Home />,
   },
   {
     path: "/payment",
-    element: (
-      <div>
-        <Payment />
-      </div>
-    ),
-  },
-  
-  
- {
-    path: "/Cart",
-    element: (
-      <div>
-        <CartItem />
-      </div>
-    ),
+    element: <Payment />,
   },
   {
-    path: "/",
-    element: (
-      <div>
-        <Logout />
-      </div>
-    ),
+    path: "/cart",
+    element: <CartItem />,
   },
   {
-    path: "/LoginForm",
-    element: (
-      <div>
-        <LoginForm />
-      </div>
-    ),
+    path: "/login",
+    element: <LoginForm />,
   },
   {
-    path: "/SignUp",
-    element: (
-      <div>
-        <SignUp />
-      </div>
-    ),
+    path: "/signup",
+    element: <SignUp />,
   },
-   {
+  {
     path: "/dashboard",
     element: (
-      <div>
+      <AdminRoute>
         <Dashboard />
-      </div>
+      </AdminRoute>
     ),
   },
 ]);
-
 function App() {
-  //  const { isAuthenticated, logout } = useCart();
-  // useAutoLogout(isAuthenticated, logout, 300000);
-  
-  return<>
-  <ToastContainer />
-  <RouterProvider router={router} />;
-  </> 
-}
+  const { isAuthenticated, logout } = useCart();
 
+  useMultiTabAutoLogout(logout, isAuthenticated, 500000);
+
+  return (
+    <>
+      <ToastContainer />
+      <RouterProvider router={router} />
+    </>
+  );
+}
 export default App;
