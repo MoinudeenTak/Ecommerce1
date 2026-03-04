@@ -1,13 +1,59 @@
 import { useState } from "react";
 import { FaCreditCard, FaMoneyBillWave, FaPaypal } from "react-icons/fa";
+import { useCart } from "../Store/ContextApi";
+import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
+import { paymentApiCall } from "../Apis/Services";
 
 const Payment = () => {
   const [paymentMethod, setPaymentMethod] = useState("card");
+  const { cartItems, dispatch, currentUser } = useCart();
+  const navigate = useNavigate();
+  const handlePayment = async () => {
+    try {
+      const totalAmount = cartItems.reduce(
+        (acc, item) => acc + item.price * item.quantity,
+        0
+      );
 
+      const res = await paymentApiCall({
+        amount: totalAmount,
+      });
+
+      if (res.data.success) {
+        toast.success("Payment Successful!");
+
+        // 🔥 CREATE ORDER OBJECT
+        const newOrder = {
+          id: Date.now(),
+          customerName: currentUser?.name || "Guest",
+          items: cartItems,
+          status: "Pending",
+          date: new Date().toISOString(),
+        };
+
+        // 🔥 SAVE ORDER
+        dispatch({ type: "ADD_ORDER", payload: newOrder });
+
+        // 🔥 CLEAR CART AFTER ORDER SAVED
+        dispatch({ type: "CLEAR_CART" });
+
+        navigate("/", {
+          replace: true,
+          state: { paymentSuccess: true },
+        });
+      }
+    } catch (error) {
+      toast.error("Payment Failed");
+    }
+  };
+  const totalPrice = cartItems.reduce(
+    (acc, item) => acc + item.price * item.quantity,
+    0
+  );
   return (
     <div className="min-h-screen bg-gray-100 py-10 px-4">
       <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-8">
-        
         {/* LEFT SIDE - Billing & Payment */}
         <div className="lg:col-span-2 bg-white p-8 rounded-2xl shadow-lg">
           <h2 className="text-2xl font-bold mb-6 text-gray-800">
@@ -127,11 +173,14 @@ const Payment = () => {
             </div>
             <div className="flex justify-between font-bold text-lg border-t pt-4">
               <span>Total</span>
-              <span>$130.00</span>
+              <span> ${totalPrice.toFixed(2)}</span>
             </div>
           </div>
 
-          <button className="mt-6 w-full bg-gray-900 hover:bg-black text-white py-3 rounded-xl font-semibold transition duration-300">
+          <button
+            onClick={handlePayment}
+            className="mt-6 w-full bg-gray-900 hover:bg-black text-white py-3 rounded-xl font-semibold transition duration-300"
+          >
             Proceed to Payment
           </button>
         </div>

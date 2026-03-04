@@ -3,10 +3,13 @@ import { toast } from "react-toastify";
 const CartContext = createContext();
 
 const initialState = {
-  cartItems: JSON.parse(localStorage.getItem("cart")) || [],
+  cartItems: [],
   // isAuthenticated: !!localStorage.getItem("token"), same line below
-  isAuthenticated: localStorage.getItem("token") ? true : false,
-  currentUser: JSON.parse(localStorage.getItem("loggedInUser")) || null,
+  // isAuthenticated: localStorage.getItem("token") ? true : false, for local storage
+  isAuthenticated: sessionStorage.getItem("token") ? true : false,
+  // currentUser: JSON.parse(localStorage.getItem("loggedInUser")) || null, for local storage
+  currentUser: JSON.parse(sessionStorage.getItem("loggedInUser")) || null,
+  orders: JSON.parse(localStorage.getItem("orders")) || [],
 };
 
 function cartReducer(state, action) {
@@ -37,12 +40,53 @@ function cartReducer(state, action) {
         ...state,
         cartItems: state.cartItems.filter((item) => item.id !== action.payload),
       };
-
+    case "SET_CART":
+      return {
+        ...state,
+        cartItems: action.payload,
+      };
+    case "CLEAR_CART":
+      return {
+        ...state,
+        cartItems: [],
+      };
+    case "INCREASE_QTY":
+      return {
+        ...state,
+        cartItems: state.cartItems.map((item) =>
+          item.id === action.payload && item.quantity < item.stock
+            ? { ...item, quantity: item.quantity + 1 }
+            : item
+        ),
+      };
+    case "DECREASE_QTY":
+      return {
+        ...state,
+        cartItems: state.cartItems
+          .map((item) =>
+            item.id === action.payload
+              ? { ...item, quantity: item.quantity - 1 }
+              : item
+          )
+          .filter((item) => item.quantity > 0),
+      };
+    case "ADD_ORDER":
+      const updatedOrders = [...state.orders, action.payload];
+      localStorage.setItem("orders", JSON.stringify(updatedOrders));
+      return {
+        ...state,
+        orders: updatedOrders,
+      };
     case "LOGIN":
       return { ...state, isAuthenticated: true, currentUser: action.payload };
 
     case "LOGOUT":
-      return { ...state, isAuthenticated: false, currentUser: null };
+      return {
+        ...state,
+        isAuthenticated: false,
+        currentUser: null,
+        cartItems: [],
+      };
 
     default:
       return state;
@@ -51,11 +95,25 @@ function cartReducer(state, action) {
 
 export function CartProvider({ children }) {
   const [state, dispatch] = useReducer(cartReducer, initialState);
+  useEffect(() => {
+    if (!state.currentUser) return;
+
+    const storedCart = localStorage.getItem(`cart_${state.currentUser.email}`);
+
+    if (storedCart) {
+      dispatch({
+        type: "SET_CART",
+        payload: JSON.parse(storedCart),
+      });
+    }
+  }, [state.currentUser]);
 
   // ✅ UPDATED LOGIN FUNCTION
   const login = (token, userData) => {
-    localStorage.setItem("token", token);
-    localStorage.setItem("loggedInUser", JSON.stringify(userData));
+    // localStorage.setItem("token", token);
+    // localStorage.setItem("loggedInUser", JSON.stringify(userData));
+    sessionStorage.setItem("loggedInUser", JSON.stringify(userData));
+    sessionStorage.setItem("token", "token");
 
     dispatch({
       type: "LOGIN",
@@ -63,8 +121,10 @@ export function CartProvider({ children }) {
     });
   };
   const logout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("loggedInUser");
+    // localStorage.removeItem("token");
+    // localStorage.removeItem("loggedInUser");
+    sessionStorage.removeItem("token");
+sessionStorage.removeItem("loggedInUser");
     // 🔥 for multi-tab sync
     localStorage.setItem("logout", Date.now());
     dispatch({ type: "LOGOUT" });
@@ -72,16 +132,20 @@ export function CartProvider({ children }) {
   };
 
   useEffect(() => {
-    localStorage.setItem("cart", JSON.stringify(state.cartItems));
-  }, [state.cartItems]);
+    if (state.currentUser) {
+      localStorage.setItem(
+        `cart_${state.currentUser.email}`,
+        JSON.stringify(state.cartItems)
+      );
+    }
+  }, [state.cartItems, state.currentUser]);
   // 🔥 ADD THIS FOR MULTI TAB LOGOUT
   useEffect(() => {
     const syncAuth = (event) => {
       if (event.key === "token") {
         if (event.newValue) {
-           const user = JSON.parse(localStorage.getItem("loggedInUser"));
+          const user = JSON.parse(localStorage.getItem("loggedInUser"));
           dispatch({ type: "LOGIN", payload: user });
-          
         } else {
           dispatch({ type: "LOGOUT" });
         }
