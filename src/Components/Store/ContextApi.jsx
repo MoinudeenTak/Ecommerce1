@@ -77,6 +77,15 @@ function cartReducer(state, action) {
         ...state,
         orders: updatedOrders,
       };
+      case "UPDATE_ORDER_STATUS":
+  return {
+    ...state,
+    orders: state.orders.map((order) =>
+      order.id === action.payload.id
+        ? { ...order, status: action.payload.status }
+        : order
+    ),
+  };
     case "LOGIN":
       return { ...state, isAuthenticated: true, currentUser: action.payload };
 
@@ -166,6 +175,7 @@ sessionStorage.removeItem("loggedInUser");
     login,
     logout,
     currentUser: state.currentUser,
+    orders: state.orders,
   };
 
   return (
